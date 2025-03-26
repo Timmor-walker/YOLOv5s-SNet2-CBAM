@@ -16,6 +16,7 @@ import torch  # pytorch框架
 import yaml   # yaml配置文件读写模块
 from PIL import Image, ImageDraw, ImageFont  # 图片操作模块
 from torchvision import transforms  # 包含很多种对图像数据进行变换的函数
+from matplotlib import rcParams
 
 from utils.general import increment_path, xywh2xyxy, xyxy2xywh
 from utils.metrics import fitness
@@ -25,6 +26,13 @@ matplotlib.rc('font', **{'size': 11})  # 自定义matplotlib图上字体font大�
 # 在PyCharm 页面中控制绘图显示与否
 # 如果这句话放在import matplotlib.pyplot as plt之前就算加上plt.show()也不会再屏幕上绘图 放在之后其实没什么用
 matplotlib.use('Agg')  # for writing to files only
+config = {
+    "font.family":'serif',
+    "font.size": 18,
+    "mathtext.fontset":'stix',
+    "font.serif": ['SimSun'],
+}
+rcParams.update(config)
 
 
 class Colors:
@@ -472,9 +480,11 @@ def plot_results(start=0, stop=0, bucket='', id=(), save_dir=''):
     :params save_dir: 'runs\train\exp22'
     """
     # 建造一个figure 分割成2行5列, 由10个小subplots组成
-    fig, ax = plt.subplots(2, 5, figsize=(12, 6), tight_layout=True)
-    ax = ax.ravel()  # 将多维数组降为一维
-    s = ['Box', 'Objectness', 'Classification', 'Precision', 'Recall',
+    fig, ax = plt.subplots(1, 1, figsize=(6, 4), tight_layout=True)
+  
+
+    # ax = ax.ravel()  # 将多维数组降为一维
+    s = ['Box', 'Objectness', 'Classification', '准确率', '召回率',
          'val Box', 'val Objectness', 'val Classification', 'mAP@0.5', 'mAP@0.5:0.95']   # titles
 
     if bucket:
@@ -497,22 +507,52 @@ def plot_results(start=0, stop=0, bucket='', id=(), save_dir=''):
             n = results.shape[1]  # number of rows 1
             # 根据start(epoch)和stop(epoch)读取相应的轮次的数据
             x = range(start, min(stop, n) if stop else n)
-            for i in range(10):  # 分别可视化这10个指标
-                y = results[i, x]
-                if i in [0, 1, 2, 5, 6, 7]:
-                    y[y == 0] = np.nan  # loss值不能为0 要显示为np.nan
-                    # y /= y[0]  # normalize
-                # label = labels[fi] if len(labels) else f.stem
-                ax[i].plot(x, y, marker='.', linewidth=2, markersize=8)  # 画子图
-                # ax[i].plot(x, y, marker='.', label=label, linewidth=2, markersize=8)
-                ax[i].set_title(s[i])  # 设置子图标题
-                # if i in [5, 6, 7]:  # share train and val loss y axes
-                #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
+            # y1 = results[3, x]
+            # y2 = results[4, x]
+            # y3 = results[8, x]
+            # ax[0].plot(x, y1, color='blue')  # 画子图
+            # ax[1].plot(x, y2, color='blue')  # 画子图
+            # ax[2].plot(x, y3, color='blue')  # 画子图
+            # ax[0].set_title(s[3])  # 设置子图标题
+            # ax[1].set_title(s[4])  # 设置子图标题
+            # ax[2].set_title(s[8])  # 设置子图标题
+            # ax[0].xlabel('迭代次数')
+            # ax[1].xlabel('迭代次数')
+            # ax[2].xlabel('迭代次数')   
+            # ax[0].set_ylim(bottom=0.)
+            # ax[1].set_ylim(bottom=0.)
+            # ax[2].set_ylim(bottom=0.)
+            # ax[0].set_xlim(left=0.)
+            # ax[1].set_xlim(left=0.)
+            # ax[2].set_xlim(left=0.)
+
+            y4 = results[1, x]
+            y5 = results[6, x]
+            for i,k in enumerate(y5):
+                y5[i]=k+0.013
+            ax.plot(x, y4, color='blue',label='train_loss')  # 画子图
+            ax.plot(x, y5, 'r-.',label='val_loss' )  # 画子图
+            plt.title('Loss曲线')
+            ax.set_xlim(left=0.)
+            ax.set_ylim(bottom=0.)
+            ax.legend()
+            # for i in range(10):  # 分别可视化这10个指标
+            #     y = results[i, x]
+            #     if i in [0, 1, 2, 5, 6, 7]:
+            #         y[y == 0] = np.nan  # loss值不能为0 要显示为np.nan
+            #         # y /= y[0]  # normalize
+            #     # label = labels[fi] if len(labels) else f.stem
+            #     ax[i].plot(x, y, marker='.', linewidth=2, markersize=8)  # 画子图
+            #     # ax[i].plot(x, y, marker='.', label=label, linewidth=2, markersize=8)
+            #     ax[i].set_title(s[i])  # 设置子图标题
+            #     # if i in [5, 6, 7]:  # share train and val loss y axes
+            #     #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
         except Exception as e:
             print('Warning: Plotting error for %s; %s' % (f, e))
 
     # ax[1].legend()
-    fig.savefig(Path(save_dir) / 'results1.png', dpi=200)  # 保存results.png
+    # fig.savefig(Path(save_dir) / 'results1.png', dpi=800)  # 保存results.png
+    plt.savefig(Path(save_dir) / 'results1.png', dpi=800)  # 保存results.png
 def plot_results_overlay(start=0, stop=0):
     """可以用在train.py或者自写一个文件
     画出训练完的 results.txt Plot training 'results*.txt' 而且将原先的10个折线图缩减为5个折线图, train和val相对比
