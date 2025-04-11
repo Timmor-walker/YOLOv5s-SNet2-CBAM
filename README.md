@@ -51,3 +51,9 @@ mAP@0.5~0.95  | 0.885  |  0.84
 ## Reference
 [ultralytics/yolov5](https://github.com/ultralytics/yolov5)   
 [ppogg/YOLOv5-Lite](https://github.com/ppogg/YOLOv5-Lite).
+
+
+### Citation
+If you use this work, please cite the following paper:
+
+> Haoju Song, Jun Wang, Zhen Li, Guiqin Li. Enhanced Sodium Rod Detection and Distribution Using a YOLOv5s-SNet2-CBAM Lightweight Network[J]. The Visual Computer, 2025.  
